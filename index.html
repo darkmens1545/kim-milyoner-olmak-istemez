@@ -1,0 +1,1253 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kim Milyoner Olmak İster?</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+body{
+    margin:0;
+    min-height:100vh;
+    background:#080a25;
+    color:white;
+    font-family:Arial,sans-serif;
+}
+
+.game{
+    max-width:700px;
+    min-height:100vh;
+    margin:auto;
+    padding:15px;
+    background:linear-gradient(#071743,#28104d);
+}
+
+.top{
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.top button{
+    width:75px;
+    height:58px;
+    border:3px solid white;
+    border-radius:32px;
+    background:linear-gradient(#07517d,#001b48);
+    color:white;
+    font-size:25px;
+}
+
+.money{
+    flex:1;
+    text-align:center;
+    color:#111;
+    font-size:25px;
+    font-weight:bold;
+    padding:8px;
+    border:3px solid white;
+    border-radius:35px;
+    background:linear-gradient(#ff9b22,#ffe16a,#ff9b22);
+}
+
+.progress{
+    font-size:18px;
+    margin-top:2px;
+}
+
+.question{
+    margin-top:30px;
+    min-height:190px;
+    padding:25px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    font-size:25px;
+    line-height:1.5;
+    border:2px solid white;
+    border-radius:25px 25px 0 0;
+    background:linear-gradient(#075577,#071a40);
+}
+
+.jokers{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:9px;
+    margin:15px 0;
+}
+
+.joker{
+    height:62px;
+    border:3px solid white;
+    border-radius:32px;
+    background:linear-gradient(#07517d,#001b48);
+    color:white;
+    font-size:21px;
+    font-weight:bold;
+}
+
+.joker.used{
+    opacity:.35;
+    text-decoration:line-through;
+}
+
+#twoHint{
+    text-align:center;
+    color:#ffd21c;
+    font-size:17px;
+    font-weight:bold;
+    min-height:20px;
+}
+
+.answers{
+    margin-top:5px;
+}
+
+.answer{
+    width:100%;
+    min-height:76px;
+    margin:11px 0;
+    padding:14px 20px;
+    text-align:left;
+    border:3px solid white;
+    border-radius:38px;
+    background:linear-gradient(#07436d,#001a46);
+    color:white;
+    font-size:21px;
+    font-weight:bold;
+}
+
+.answer:active{
+    transform:scale(.98);
+}
+
+.letter{
+    color:#ffb000;
+    margin-right:8px;
+}
+
+.answer.correct{
+    background:#15982d;
+}
+
+.answer.wrong{
+    background:#a91616;
+}
+
+.answer.selected{
+    background:#b78200;
+}
+
+.answer.hidden{
+    visibility:hidden;
+}
+
+.modal{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    background:rgba(0,0,0,.78);
+}
+
+.modal.show{
+    display:flex;
+}
+
+.box{
+    width:min(600px,100%);
+    max-height:90vh;
+    overflow:auto;
+    padding:28px 20px;
+    text-align:center;
+    border:3px solid white;
+    border-radius:25px;
+    background:linear-gradient(#350064,#07103f);
+}
+
+.box h1{
+    color:#ffbd17;
+    font-size:42px;
+}
+
+.box h2{
+    font-size:28px;
+}
+
+.box p{
+    font-size:21px;
+    line-height:1.5;
+}
+
+.box button{
+    width:100%;
+    padding:17px;
+    margin-top:12px;
+    border:3px solid white;
+    border-radius:35px;
+    background:linear-gradient(#084d7c,#001c4b);
+    color:white;
+    font-size:20px;
+    font-weight:bold;
+}
+
+.percent{
+    height:200px;
+    display:flex;
+    align-items:end;
+    justify-content:space-around;
+    margin:30px 0;
+}
+
+.bar{
+    width:18%;
+    min-height:5px;
+    position:relative;
+    border-radius:10px 10px 0 0;
+    background:#ffad00;
+}
+
+.bar span{
+    position:absolute;
+    top:-42px;
+    width:100%;
+    left:0;
+    font-size:18px;
+    font-weight:bold;
+}
+
+.small{
+    font-size:16px!important;
+}
+</style>
+</head>
+
+<body>
+
+<div class="game">
+
+    <div class="top">
+
+        <button onclick="exitGame()">🚪</button>
+
+        <div class="money">
+            <div id="money">0 ₺</div>
+            <div class="progress" id="progress">1 / 12</div>
+        </div>
+
+        <button onclick="showMoney()">💰</button>
+
+    </div>
+
+    <div class="question" id="question">
+        Soru yükleniyor...
+    </div>
+
+    <div class="jokers">
+
+        <button class="joker"
+                id="fifty"
+                onclick="use5050()">
+            −2
+        </button>
+
+        <button class="joker"
+                id="phone"
+                onclick="phoneFriend()">
+            ☎️
+        </button>
+
+        <button class="joker"
+                id="audience"
+                onclick="askAudience()">
+            📊
+        </button>
+
+        <button class="joker"
+                id="double"
+                onclick="useDouble()">
+            2×
+        </button>
+
+    </div>
+
+    <div id="twoHint"></div>
+
+    <div class="answers" id="answers"></div>
+
+</div>
+
+
+<div class="modal" id="modal">
+    <div class="box" id="modalBox"></div>
+</div>
+
+
+<script>
+
+/* =========================
+   SORULAR
+========================= */
+
+const questions = [
+
+{
+    q:"Halk arasında kullanılan bir söze göre, çok önemsiz bir olayın hangisini doldurmadığı söylenir?",
+    a:[
+        "İncir çekirdeği",
+        "Karpuz çekirdeği",
+        "Yumurta kabuğu",
+        "Ceviz kabuğu"
+    ],
+    c:0
+},
+
+{
+    q:"Adında 'su' kelimesi geçen bir türü bulunan yiyecek hangisidir?",
+    a:[
+        "Kabak",
+        "Muhallebi",
+        "Börek",
+        "Pirinç"
+    ],
+    c:1
+},
+
+{
+    q:"Türkiye'nin başkenti hangisidir?",
+    a:[
+        "İstanbul",
+        "İzmir",
+        "Ankara",
+        "Bursa"
+    ],
+    c:2
+},
+
+{
+    q:"Bir haftada kaç gün vardır?",
+    a:[
+        "5",
+        "6",
+        "7",
+        "8"
+    ],
+    c:2
+},
+
+{
+    q:"Dünyanın doğal uydusu hangisidir?",
+    a:[
+        "Mars",
+        "Ay",
+        "Venüs",
+        "Jüpiter"
+    ],
+    c:1
+},
+
+{
+    q:"Hangi hayvan 'ormanların kralı' olarak bilinir?",
+    a:[
+        "Kaplan",
+        "Fil",
+        "Aslan",
+        "Kurt"
+    ],
+    c:2
+},
+
+{
+    q:"Su, deniz seviyesinde yaklaşık kaç derecede donar?",
+    a:[
+        "0°C",
+        "10°C",
+        "50°C",
+        "100°C"
+    ],
+    c:0
+},
+
+{
+    q:"Türkiye'nin para birimi hangisidir?",
+    a:[
+        "Dolar",
+        "Euro",
+        "Sterlin",
+        "Türk lirası"
+    ],
+    c:3
+},
+
+{
+    q:"İnsan vücudunda kanı pompalayan organ hangisidir?",
+    a:[
+        "Akciğer",
+        "Kalp",
+        "Beyin",
+        "Mide"
+    ],
+    c:1
+},
+
+{
+    q:"Güneş sistemindeki en büyük gezegen hangisidir?",
+    a:[
+        "Dünya",
+        "Mars",
+        "Jüpiter",
+        "Merkür"
+    ],
+    c:2
+},
+
+{
+    q:"Normal bir yılda kaç ay vardır?",
+    a:[
+        "10",
+        "11",
+        "12",
+        "13"
+    ],
+    c:2
+},
+
+{
+    q:"'Kızıl Gezegen' olarak bilinen gezegen hangisidir?",
+    a:[
+        "Mars",
+        "Venüs",
+        "Satürn",
+        "Neptün"
+    ],
+    c:0
+},
+
+{
+    q:"Türkiye hangi kıtalarda topraklara sahiptir?",
+    a:[
+        "Avrupa ve Asya",
+        "Asya ve Afrika",
+        "Avrupa ve Afrika",
+        "Amerika ve Asya"
+    ],
+    c:0
+},
+
+{
+    q:"Dünya'nın kendi etrafında dönmesi yaklaşık ne kadar sürer?",
+    a:[
+        "12 saat",
+        "24 saat",
+        "48 saat",
+        "7 gün"
+    ],
+    c:1
+},
+
+{
+    q:"?",
+    a:[
+        "4",
+        "6",
+        "9",
+        "7"
+    ],
+    c:3
+},
+
+{
+    q:"'Vpn gitti diye oyundan cikip geri gelen kimdir?",
+    a:[
+        "Yusuf",
+        "Dream",
+        "Xira",
+        "Esma"
+    ],
+    c:0
+}
+
+];
+
+
+/* =========================
+   PARA
+========================= */
+
+const prizes = [
+    500,
+    1000,
+    2000,
+    5000,
+    10000,
+    20000,
+    50000,
+    100000,
+    250000,
+    500000,
+    750000,
+    1000000
+];
+
+
+/* =========================
+   OYUN DEĞİŞKENLERİ
+========================= */
+
+let questionsLeft = [];
+
+let current = null;
+
+let questionNumber = 0;
+
+let money = 0;
+
+let locked = false;
+
+let used5050 = false;
+let usedPhone = false;
+let usedAudience = false;
+let usedDouble = false;
+
+let doubleActive = false;
+let doubleSelections = 0;
+
+
+/* =========================
+   OYUNU BAŞLAT
+========================= */
+
+function startGame(){
+
+    questionsLeft = [...questions];
+
+    shuffle(questionsLeft);
+
+    questionNumber = 0;
+
+    money = 0;
+
+    locked = false;
+
+    used5050 = false;
+    usedPhone = false;
+    usedAudience = false;
+    usedDouble = false;
+
+    doubleActive = false;
+    doubleSelections = 0;
+
+    document.getElementById("fifty").classList.remove("used");
+    document.getElementById("phone").classList.remove("used");
+    document.getElementById("audience").classList.remove("used");
+    document.getElementById("double").classList.remove("used");
+
+    document.getElementById("modal").classList.remove("show");
+
+    nextQuestion();
+}
+
+
+/* =========================
+   SONRAKİ SORU
+========================= */
+
+function nextQuestion(){
+
+    /*
+       EN ÖNEMLİ KISIM:
+       Her yeni soruda locked tekrar false oluyor.
+       Böylece jokerler ve cevaplar çalışıyor.
+    */
+
+    locked = false;
+
+    doubleActive = false;
+
+    doubleSelections = 0;
+
+    document.getElementById("twoHint").innerText = "";
+
+    if(questionNumber >= 12){
+
+        winGame();
+
+        return;
+    }
+
+    if(questionsLeft.length === 0){
+
+        winGame();
+
+        return;
+    }
+
+    /*
+       Karıştırılmış havuzdan bir soru çıkarıyoruz.
+       Böylece aynı soru aynı oyunda tekrar gelmiyor.
+    */
+
+    current = questionsLeft.shift();
+
+    questionNumber++;
+
+    document.getElementById("money").innerText =
+        formatMoney(money) + " ₺";
+
+    document.getElementById("progress").innerText =
+        questionNumber + " / 12";
+
+    document.getElementById("question").innerText =
+        current.q;
+
+
+    const answers =
+        document.getElementById("answers");
+
+    answers.innerHTML = "";
+
+
+    current.a.forEach((text,index)=>{
+
+        const button =
+            document.createElement("button");
+
+        button.className = "answer";
+
+        button.dataset.index = index;
+
+        button.innerHTML =
+            `<span class="letter">
+                ${String.fromCharCode(65+index)}:
+             </span>
+             ${text}`;
+
+        button.onclick = function(){
+
+            selectAnswer(index,this);
+
+        };
+
+        answers.appendChild(button);
+
+    });
+
+}
+
+
+/* =========================
+   CEVAP SEÇME
+========================= */
+
+function selectAnswer(index,button){
+
+    if(locked){
+
+        return;
+    }
+
+
+    /* NORMAL CEVAP */
+
+    if(!doubleActive){
+
+        locked = true;
+
+        if(index === current.c){
+
+            button.classList.add("correct");
+
+            money =
+                prizes[questionNumber-1];
+
+            setTimeout(function(){
+
+                nextQuestion();
+
+            },700);
+
+        }
+        else{
+
+            button.classList.add("wrong");
+
+            setTimeout(function(){
+
+                gameOver();
+
+            },700);
+
+        }
+
+        return;
+    }
+
+
+    /* =====================
+       2X MODU
+    ===================== */
+
+    if(button.classList.contains("selected")){
+
+        return;
+    }
+
+    button.classList.add("selected");
+
+    doubleSelections++;
+
+
+    /* DOĞRU CEVAP */
+
+    if(index === current.c){
+
+        locked = true;
+
+        button.classList.remove("selected");
+
+        button.classList.add("correct");
+
+        money =
+            prizes[questionNumber-1];
+
+        document.getElementById("twoHint").innerText =
+            "Doğru! 🎉";
+
+        setTimeout(function(){
+
+            nextQuestion();
+
+        },700);
+
+        return;
+    }
+
+
+    /* İLK YANLIŞ */
+
+    if(doubleSelections === 1){
+
+        button.classList.remove("selected");
+
+        button.classList.add("wrong");
+
+        document.getElementById("twoHint").innerText =
+            "İlk cevap yanlış! Bir hakkın daha var.";
+
+        return;
+    }
+
+
+    /* İKİNCİ YANLIŞ */
+
+    if(doubleSelections === 2){
+
+        locked = true;
+
+        button.classList.remove("selected");
+
+        button.classList.add("wrong");
+
+        document.getElementById("twoHint").innerText =
+            "İki cevap da yanlış!";
+
+        setTimeout(function(){
+
+            gameOver();
+
+        },700);
+
+    }
+
+}
+
+
+/* =========================
+   50/50
+========================= */
+
+function use5050(){
+
+    if(used5050 || locked){
+
+        return;
+    }
+
+    used5050 = true;
+
+    document
+        .getElementById("fifty")
+        .classList.add("used");
+
+
+    let wrong = [];
+
+    current.a.forEach(function(_,index){
+
+        if(index !== current.c){
+
+            wrong.push(index);
+
+        }
+
+    });
+
+
+    shuffle(wrong);
+
+
+    wrong.slice(0,2).forEach(function(index){
+
+        document
+            .querySelectorAll(".answer")[index]
+            .classList.add("hidden");
+
+    });
+
+}
+
+
+/* =========================
+   2X
+========================= */
+
+function useDouble(){
+
+    if(usedDouble || locked){
+
+        return;
+    }
+
+    usedDouble = true;
+
+    doubleActive = true;
+
+    doubleSelections = 0;
+
+    document
+        .getElementById("double")
+        .classList.add("used");
+
+    document.getElementById("twoHint").innerText =
+        "2× aktif! Bu soruda 2 cevap seçebilirsin.";
+
+}
+
+
+/* =========================
+   SEYİRCİ
+========================= */
+
+function askAudience(){
+
+    if(usedAudience || locked){
+
+        return;
+    }
+
+    usedAudience = true;
+
+    document
+        .getElementById("audience")
+        .classList.add("used");
+
+
+    let values = [0,0,0,0];
+
+    values[current.c] = 70;
+
+    let remaining = 30;
+
+
+    let wrong = [];
+
+    for(let i=0;i<4;i++){
+
+        if(i !== current.c){
+
+            wrong.push(i);
+
+        }
+
+    }
+
+    shuffle(wrong);
+
+
+    wrong.forEach(function(index,i){
+
+        if(i === wrong.length-1){
+
+            values[index] = remaining;
+
+        }
+        else{
+
+            let value =
+                Math.floor(Math.random() * (remaining + 1));
+
+            values[index] = value;
+
+            remaining -= value;
+
+        }
+
+    });
+
+
+    let html = `
+        <h2>👥 Seyirciye Sor</h2>
+
+        <div class="percent">
+    `;
+
+
+    values.forEach(function(value,index){
+
+        html += `
+            <div class="bar"
+                 style="height:${Math.max(value,5)}%">
+                <span>
+                    ${String.fromCharCode(65+index)}
+                    <br>
+                    ${value}%
+                </span>
+            </div>
+        `;
+
+    });
+
+
+    html += `
+        </div>
+
+        <button onclick="closeModal()">
+            Kapat
+        </button>
+    `;
+
+
+    showModal(html);
+
+}
+
+
+/* =========================
+   EINSTEIN
+========================= */
+
+function phoneFriend(){
+
+    if(usedPhone || locked){
+
+        return;
+    }
+
+    usedPhone = true;
+
+    document
+        .getElementById("phone")
+        .classList.add("used");
+
+
+    showModal(`
+
+        <h2>☎️ Albert Einstein</h2>
+
+        <p>
+            Merhaba, soruya baktım.
+        </p>
+
+        <h2>
+            Bence cevap:
+            <br><br>
+            ${String.fromCharCode(65+current.c)}
+            — ${current.a[current.c]}
+        </h2>
+
+        <p class="small">
+            Einstein'ın cevabı sadece bir yardım ipucudur.
+        </p>
+
+        <button onclick="closeModal()">
+            Kapat
+        </button>
+
+    `);
+
+}
+
+
+/* =========================
+   PARA
+========================= */
+
+function showMoney(){
+
+    showModal(`
+
+        <h2>💰 Kazancınız</h2>
+
+        <h1>
+            ${formatMoney(money)} ₺
+        </h1>
+
+        <p>
+            Mevcut kazancınız:
+        </p>
+
+        <button onclick="closeModal()">
+            Devam Et
+        </button>
+
+    `);
+
+}
+
+
+/* =========================
+   ÇIKIŞ
+========================= */
+
+function exitGame(){
+
+    showModal(`
+
+        <h2>
+            Oyunu bitirmek istediğinizden
+            emin misiniz?
+        </h2>
+
+        <p>
+            Kazancınız şu olacak:
+        </p>
+
+        <h1>
+            ${formatMoney(money)} ₺
+        </h1>
+
+        <button onclick="takeMoney()">
+            Para al
+        </button>
+
+        <button onclick="closeModal()">
+            Devam Et
+        </button>
+
+        <button onclick="howToPlay()">
+            NASIL OYNANIR
+        </button>
+
+    `);
+
+}
+
+
+/* =========================
+   PARA AL
+========================= */
+
+function takeMoney(){
+
+    showModal(`
+
+        <h2>🎉 Tebrikler!</h2>
+
+        <p>
+            Kazandığınız para:
+        </p>
+
+        <h1>
+            ${formatMoney(money)} ₺
+        </h1>
+
+        <button onclick="startGame()">
+            🔄 Yeni Oyun
+        </button>
+
+    `);
+
+}
+
+
+/* =========================
+   OYUN BİTTİ
+========================= */
+
+function gameOver(){
+
+    showModal(`
+
+        <h2>❌ Oyun Bitti</h2>
+
+        <p>
+            Maalesef yanlış cevap verdiniz.
+        </p>
+
+        <h1>
+            ${formatMoney(money)} ₺
+        </h1>
+
+        <button onclick="startGame()">
+            🔄 Tekrar Oyna
+        </button>
+
+    `);
+
+}
+
+
+/* =========================
+   KAZANMA
+========================= */
+
+function winGame(){
+
+    money = 1000000;
+
+    showModal(`
+
+        <h2>🏆 BÜYÜK ÖDÜL!</h2>
+
+        <p>
+            12 sorunun tamamını doğru cevapladınız!
+        </p>
+
+        <h1>
+            1.000.000 ₺
+        </h1>
+
+        <button onclick="startGame()">
+            🔄 Yeni Oyun
+        </button>
+
+    `);
+
+}
+
+
+/* =========================
+   NASIL OYNANIR
+========================= */
+
+function howToPlay(){
+
+    showModal(`
+
+        <h2>🎮 NASIL OYNANIR?</h2>
+
+        <p>
+            Soruları doğru cevaplayarak
+            para kazanırsınız.
+        </p>
+
+        <p>
+            <b>−2:</b>
+            İki yanlış cevabı kaldırır.
+        </p>
+
+        <p>
+            <b>☎️:</b>
+            Albert Einstein'dan yardım alırsınız.
+        </p>
+
+        <p>
+            <b>📊:</b>
+            Seyircinin tahminlerini gösterir.
+        </p>
+
+        <p>
+            <b>2×:</b>
+            Aynı soruda iki farklı cevap
+            seçme hakkı verir.
+        </p>
+
+        <button onclick="closeModal()">
+            Tamam
+        </button>
+
+    `);
+
+}
+
+
+/* =========================
+   MODAL
+========================= */
+
+function showModal(html){
+
+    document
+        .getElementById("modalBox")
+        .innerHTML = html;
+
+    document
+        .getElementById("modal")
+        .classList.add("show");
+
+}
+
+
+function closeModal(){
+
+    document
+        .getElementById("modal")
+        .classList.remove("show");
+
+}
+
+
+/* =========================
+   KARIŞTIRMA
+========================= */
+
+function shuffle(array){
+
+    for(
+        let i=array.length-1;
+        i>0;
+        i--
+    ){
+
+        const j =
+            Math.floor(Math.random() * (i+1));
+
+        [array[i],array[j]] =
+        [array[j],array[i]];
+
+    }
+
+    return array;
+}
+
+
+/* =========================
+   PARA FORMAT
+========================= */
+
+function formatMoney(number){
+
+    return number.toLocaleString("tr-TR");
+
+}
+
+
+/* =========================
+   OYUNU BAŞLAT
+========================= */
+
+startGame();
+
+</script>
+
+</body>
+</html>
